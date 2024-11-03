@@ -3,7 +3,7 @@ const API_KEY = 'RGAPI-3f1dda05-adf5-4772-8d68-de864b539d47';  // Replace with y
 // Define players with their summoner names and regions
 const players = [
     { name: "Kalivra", region: "na1" },  // Replace "NAPlayerName" with an actual NA player's summoner name
-    { name: "Lord Basbous", region: "euw1" } // Replace "EUWPlayerName" with an actual EUW player's summoner name
+    { name: "Kapriano", region: "euw1" } // Replace "EUWPlayerName" with an actual EUW player's summoner name
 ];
 
 async function fetchPlayerData(player) {
