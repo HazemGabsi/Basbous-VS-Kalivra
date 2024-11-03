@@ -1,38 +1,65 @@
-const API_KEY = 'RGAPI-3f1dda05-adf5-4772-8d68-de864b539d47';
-const playerNames = ["Lord Basbous#EUW", "Kalivra#NA1"]; // Replace with your friends' summoner names
+const API_KEY = 'RGAPI-3f1dda05-adf5-4772-8d68-de864b539d47';  // Replace with your actual Riot Games API key
 
-async function fetchPlayerData(name) {
+// Define players with their summoner names and regions
+const players = [
+    { name: "Kalivra", region: "na1" },  // Replace "NAPlayerName" with an actual NA player's summoner name
+    { name: "Lord Basbous", region: "euw1" } // Replace "EUWPlayerName" with an actual EUW player's summoner name
+];
+
+async function fetchPlayerData(player) {
     try {
-        // Get player data from Summoner API
+        // Fetch player data from the Summoner API, using the player’s region
         const summonerResponse = await fetch(
-            `https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${name}?api_key=${API_KEY}`
+            `https://${player.region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/${player.name}?api_key=${API_KEY}`
         );
+
+        if (!summonerResponse.ok) {
+            throw new Error(`Failed to fetch summoner data for ${player.name}`);
+        }
+
         const summonerData = await summonerResponse.json();
 
-        // Get ranked stats using the encrypted summoner ID
+        // Fetch ranked data using the encrypted summoner ID
         const leagueResponse = await fetch(
-            `https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerData.id}?api_key=${API_KEY}`
+            `https://${player.region}.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerData.id}?api_key=${API_KEY}`
         );
+
+        if (!leagueResponse.ok) {
+            throw new Error(`Failed to fetch league data for ${player.name}`);
+        }
+
         const leagueData = await leagueResponse.json();
 
-        return {
-            name: name,
-            rank: leagueData[0].tier + " " + leagueData[0].rank,
-            lp: leagueData[0].leaguePoints,
-            wins: leagueData[0].wins,
-            losses: leagueData[0].losses,
-        };
+        // Return player's ranked information, or "Unranked" if no ranked data found
+        if (leagueData.length > 0) {
+            return {
+                name: player.name,
+                rank: leagueData[0].tier + " " + leagueData[0].rank,
+                lp: leagueData[0].leaguePoints,
+                wins: leagueData[0].wins,
+                losses: leagueData[0].losses,
+            };
+        } else {
+            return {
+                name: player.name,
+                rank: "Unranked",
+                lp: 0,
+                wins: 0,
+                losses: 0,
+            };
+        }
     } catch (error) {
-        console.error("Error fetching data: ", error);
+        console.error("Error fetching data:", error);
+        return null; // Return null if an error occurs
     }
 }
 
 async function displayPlayerStats() {
     const container = document.getElementById("player-stats");
-    container.innerHTML = "";
+    container.innerHTML = ""; // Clear previous data
 
-    for (const name of playerNames) {
-        const data = await fetchPlayerData(name);
+    for (const player of players) {
+        const data = await fetchPlayerData(player);
         if (data) {
             const playerDiv = document.createElement("div");
             playerDiv.innerHTML = `
@@ -42,9 +69,13 @@ async function displayPlayerStats() {
                 <p>Wins: ${data.wins}, Losses: ${data.losses}</p>
             `;
             container.appendChild(playerDiv);
+        } else {
+            const errorDiv = document.createElement("div");
+            errorDiv.innerHTML = `<p>Error loading data for ${player.name}</p>`;
+            container.appendChild(errorDiv);
         }
     }
 }
 
-// Run the function when the page loads
+// Run displayPlayerStats when the page loads
 window.onload = displayPlayerStats;
