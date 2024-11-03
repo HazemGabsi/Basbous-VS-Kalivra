@@ -1,6 +1,6 @@
 const players = [
-    { name: "Kalivra", region: "na1" },  // Replace with real summoner name
-    { name: "Lord Basbous", region: "euw1" } // Replace with real summoner name
+    { name: "kalivra-na1", region: "na1" },  // Replace with real summoner name
+    { name: "lord%20basbous-euw", region: "euw1" } // Replace with real summoner name
 ];
 
 async function fetchPlayerStats(player) {
