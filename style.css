@@ -1,0 +1,10 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+#player-stats div {
+    border: 1px solid #333;
+    padding: 10px;
+    margin: 10px auto;
+    width: 300px;
+}
