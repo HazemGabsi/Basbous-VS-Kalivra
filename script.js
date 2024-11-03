@@ -1,4 +1,4 @@
-const API_KEY = 'RGAPI-3f1dda05-adf5-4772-8d68-de864b539d47';  // Replace with your actual Riot Games API key
+const API_KEY = 'RGAPI-d7231e67-f9eb-41ba-871d-b6cce7109d0e';  // Replace with your actual Riot Games API key
 
 // Define players with their summoner names and regions
 const players = [
