@@ -1,56 +1,34 @@
-const API_KEY = 'RGAPI-d7231e67-f9eb-41ba-871d-b6cce7109d0e';  // Replace with your actual Riot Games API key
-
-// Define players with their summoner names and regions
 const players = [
-    { name: "Kalivra", region: "na1" },  // Replace "NAPlayerName" with an actual NA player's summoner name
-    { name: "Kapriano", region: "euw1" } // Replace "EUWPlayerName" with an actual EUW player's summoner name
+    { name: "Kalivra", region: "na1" },  // Replace with real summoner name
+    { name: "Lord Basbous", region: "euw1" } // Replace with real summoner name
 ];
 
-async function fetchPlayerData(player) {
+async function fetchPlayerStats(player) {
+    const url = `https://u.gg/lol/summoners/${player.region}/${player.name}`;
+
     try {
-        // Fetch player data from the Summoner API, using the player’s region
-        const summonerResponse = await fetch(
-            `https://${player.region}.api.riotgames.com/lol/summoner/v4/summoners/by-name/${player.name}?api_key=${API_KEY}`
-        );
-
-        if (!summonerResponse.ok) {
-            throw new Error(`Failed to fetch summoner data for ${player.name}`);
-        }
-
-        const summonerData = await summonerResponse.json();
-
-        // Fetch ranked data using the encrypted summoner ID
-        const leagueResponse = await fetch(
-            `https://${player.region}.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerData.id}?api_key=${API_KEY}`
-        );
-
-        if (!leagueResponse.ok) {
-            throw new Error(`Failed to fetch league data for ${player.name}`);
-        }
-
-        const leagueData = await leagueResponse.json();
-
-        // Return player's ranked information, or "Unranked" if no ranked data found
-        if (leagueData.length > 0) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Network response was not ok");
+        
+        const text = await response.text();
+        
+        // Extract stats using regex or DOM parsing
+        const winsLossesMatch = text.match(/<div class="WinLose__StyledWinLose.*?">(\d+) W \| (\d+) L<\/div>/);
+        const rankMatch = text.match(/<div class="TierRank.*?">([\w\s]+)<\/div>/);
+        
+        if (winsLossesMatch && rankMatch) {
             return {
                 name: player.name,
-                rank: leagueData[0].tier + " " + leagueData[0].rank,
-                lp: leagueData[0].leaguePoints,
-                wins: leagueData[0].wins,
-                losses: leagueData[0].losses,
+                rank: rankMatch[1], // Extract rank information
+                wins: parseInt(winsLossesMatch[1]), // Extract wins
+                losses: parseInt(winsLossesMatch[2]), // Extract losses
             };
         } else {
-            return {
-                name: player.name,
-                rank: "Unranked",
-                lp: 0,
-                wins: 0,
-                losses: 0,
-            };
+            throw new Error("Could not extract player stats");
         }
     } catch (error) {
-        console.error("Error fetching data:", error);
-        return null; // Return null if an error occurs
+        console.error("Error fetching player stats:", error);
+        return null;
     }
 }
 
@@ -59,13 +37,12 @@ async function displayPlayerStats() {
     container.innerHTML = ""; // Clear previous data
 
     for (const player of players) {
-        const data = await fetchPlayerData(player);
+        const data = await fetchPlayerStats(player);
         if (data) {
             const playerDiv = document.createElement("div");
             playerDiv.innerHTML = `
                 <h2>${data.name}</h2>
                 <p>Rank: ${data.rank}</p>
-                <p>LP: ${data.lp}</p>
                 <p>Wins: ${data.wins}, Losses: ${data.losses}</p>
             `;
             container.appendChild(playerDiv);
@@ -77,5 +54,5 @@ async function displayPlayerStats() {
     }
 }
 
-// Run displayPlayerStats when the page loads
+// Run displayPlayerStats on page load
 window.onload = displayPlayerStats;
